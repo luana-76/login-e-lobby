@@ -154,6 +154,26 @@ public final class ModItems {
         armor("acc_chapeu_palha", "acc_chapeu_palha", 0, ArmorItem.Type.HELMET, Rarity.COMMON);
         armor("acc_capa_chuva", "acc_capa_chuva", 0, ArmorItem.Type.CHESTPLATE, Rarity.COMMON);
         armor("acc_galochas", "acc_galochas", 0, ArmorItem.Type.BOOTS, Rarity.COMMON);
+        armor("capacete_bombeiro", "bombeiro", 1, ArmorItem.Type.HELMET, Rarity.RARE);
+        armor("casaco_bombeiro", "bombeiro", 1, ArmorItem.Type.CHESTPLATE, Rarity.RARE);
+        armor("calca_bombeiro", "bombeiro", 1, ArmorItem.Type.LEGGINGS, Rarity.RARE);
+        armor("botas_bombeiro", "bombeiro", 1, ArmorItem.Type.BOOTS, Rarity.RARE);
+        armor("capacete_mineiro", "mineiro", 1, ArmorItem.Type.HELMET, Rarity.RARE);
+        armor("camisa_mineiro", "mineiro", 1, ArmorItem.Type.CHESTPLATE, Rarity.RARE);
+        armor("calca_mineiro", "mineiro", 1, ArmorItem.Type.LEGGINGS, Rarity.RARE);
+        armor("botas_mineiro", "mineiro", 1, ArmorItem.Type.BOOTS, Rarity.RARE);
+        armor("capuz_ninja", "ninja", 2, ArmorItem.Type.HELMET, Rarity.EPIC);
+        armor("traje_ninja", "ninja", 2, ArmorItem.Type.CHESTPLATE, Rarity.EPIC);
+        armor("calca_ninja", "ninja", 2, ArmorItem.Type.LEGGINGS, Rarity.EPIC);
+        armor("botas_ninja", "ninja", 2, ArmorItem.Type.BOOTS, Rarity.EPIC);
+        armor("vip_tricornio_pirata", "pirata", 3, ArmorItem.Type.HELMET, Rarity.EPIC);
+        armor("vip_casaco_pirata", "pirata", 3, ArmorItem.Type.CHESTPLATE, Rarity.EPIC);
+        armor("vip_calca_pirata", "pirata", 3, ArmorItem.Type.LEGGINGS, Rarity.EPIC);
+        armor("vip_botas_pirata", "pirata", 3, ArmorItem.Type.BOOTS, Rarity.EPIC);
+        armor("acc_mascara_oni", "acc_mascara_oni", 0, ArmorItem.Type.HELMET, Rarity.RARE);
+        armor("acc_pala_costas", "acc_pala_costas", 0, ArmorItem.Type.CHESTPLATE, Rarity.COMMON);
+        armor("acc_tanque_oxigenio", "acc_tanque_oxigenio", 0, ArmorItem.Type.CHESTPLATE, Rarity.RARE);
+        armor("acc_bandagem_pernas", "acc_bandagem_pernas", 0, ArmorItem.Type.LEGGINGS, Rarity.COMMON);
     }
 
     private static void armor(String id, String material, int tier, ArmorItem.Type type, Rarity rarity) {

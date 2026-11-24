@@ -137,7 +137,27 @@ final class ShopCatalog {
             new Item("acc_katana_costas", "Katana nas Costas", "Katana", Rarity.RARE, Kind.ACCESSORY, 7, -1, 320000L, false, true, 0xFF8A1414),
             new Item("acc_chapeu_palha", "Chapéu de Palha", "Chapéu", Rarity.COMMON, Kind.ACCESSORY, 7, -1, 45000L, false, false, 0xFFD8C078),
             new Item("acc_capa_chuva", "Capa de Chuva", "Capa", Rarity.COMMON, Kind.ACCESSORY, 7, -1, 85000L, false, false, 0xFFE8C624),
-            new Item("acc_galochas", "Galochas Amarelas", "Galochas", Rarity.COMMON, Kind.ACCESSORY, 7, -1, 70000L, false, false, 0xFFE8C624));
+            new Item("acc_galochas", "Galochas Amarelas", "Galochas", Rarity.COMMON, Kind.ACCESSORY, 7, -1, 70000L, false, false, 0xFFE8C624),
+            new Item("capacete_bombeiro", "Capacete de Bombeiro", "Capacete", Rarity.RARE, Kind.OUTFIT, 6, -1, 165000L, false, false, 0xFFB81E1E),
+            new Item("casaco_bombeiro", "Casaco de Bombeiro", "Casaco", Rarity.RARE, Kind.OUTFIT, 6, -1, 335000L, false, true, 0xFFE8E020),
+            new Item("calca_bombeiro", "Calça de Bombeiro", "Calça", Rarity.RARE, Kind.OUTFIT, 6, -1, 235000L, false, false, 0xFF2E2E34),
+            new Item("botas_bombeiro", "Botas de Bombeiro", "Botas", Rarity.RARE, Kind.OUTFIT, 6, -1, 130000L, false, false, 0xFF1E1E22),
+            new Item("capacete_mineiro", "Capacete de Mineiro", "Capacete", Rarity.RARE, Kind.OUTFIT, 6, -1, 145000L, false, false, 0xFFA88A4A),
+            new Item("camisa_mineiro", "Camisa de Mineiro", "Camisa", Rarity.RARE, Kind.OUTFIT, 6, -1, 300000L, false, true, 0xFFA82A24),
+            new Item("calca_mineiro", "Calça de Mineiro", "Calça", Rarity.RARE, Kind.OUTFIT, 6, -1, 210000L, false, false, 0xFF3A4A6A),
+            new Item("botas_mineiro", "Botas de Mineiro", "Botas", Rarity.RARE, Kind.OUTFIT, 6, -1, 120000L, false, false, 0xFF6A4A30),
+            new Item("capuz_ninja", "Capuz Ninja", "Capuz", Rarity.EPIC, Kind.OUTFIT, 6, -1, 70L, true, false, 0xFFA01C28),
+            new Item("traje_ninja", "Traje Ninja", "Traje", Rarity.EPIC, Kind.OUTFIT, 6, -1, 105L, true, true, 0xFF1A1A22),
+            new Item("calca_ninja", "Calça Ninja", "Calça", Rarity.EPIC, Kind.OUTFIT, 6, -1, 75L, true, false, 0xFF1A1A22),
+            new Item("botas_ninja", "Botas Ninja", "Botas", Rarity.EPIC, Kind.OUTFIT, 6, -1, 50L, true, false, 0xFFA01C28),
+            new Item("vip_tricornio_pirata", "Tricórnio Pirata VIP", "Tricórnio", Rarity.LEGENDARY, Kind.OUTFIT, 6, -1, 215L, true, true, 0xFF4AF0D0),
+            new Item("vip_casaco_pirata", "Casaco Pirata VIP", "Casaco", Rarity.LEGENDARY, Kind.OUTFIT, 6, -1, 275L, true, true, 0xFF1C3C44),
+            new Item("vip_calca_pirata", "Calça Pirata VIP", "Calça", Rarity.LEGENDARY, Kind.OUTFIT, 6, -1, 200L, true, false, 0xFFD8B040),
+            new Item("vip_botas_pirata", "Botas Pirata VIP", "Botas", Rarity.LEGENDARY, Kind.OUTFIT, 6, -1, 160L, true, false, 0xFF4AF0D0),
+            new Item("acc_mascara_oni", "Máscara Oni", "Máscara", Rarity.RARE, Kind.ACCESSORY, 7, -1, 310000L, false, true, 0xFFB81E1E),
+            new Item("acc_pala_costas", "Pá nas Costas", "Pá", Rarity.COMMON, Kind.ACCESSORY, 7, -1, 80000L, false, false, 0xFF7A5230),
+            new Item("acc_tanque_oxigenio", "Tanque de Oxigênio", "Tanque", Rarity.RARE, Kind.ACCESSORY, 7, -1, 240000L, false, false, 0xFF5A7A9A),
+            new Item("acc_bandagem_pernas", "Bandagem nas Pernas", "Bandagem", Rarity.COMMON, Kind.ACCESSORY, 7, -1, 50000L, false, false, 0xFFE8E4D0));
 
     private ShopCatalog() {}
 }
