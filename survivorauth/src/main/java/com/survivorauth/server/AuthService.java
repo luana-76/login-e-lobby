@@ -18,6 +18,8 @@ import com.mojang.logging.LogUtils;
 import com.survivorauth.config.ServerConfig;
 import com.survivorauth.net.AuthState;
 import com.survivorauth.net.AuthStatePayload;
+import com.survivorauth.net.Team;
+import com.survivorauth.net.TeamCountsPayload;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -36,8 +38,9 @@ public final class AuthService {
 
     private static final class Pending {
         final double x, y, z;
-        final long deadlineTick;
+        long deadlineTick;
         long nextPromptTick;
+        boolean teamPhase; // já se identificou, falta escolher o time
         int prompts;
         boolean busy;
 
@@ -133,9 +136,29 @@ public final class AuthService {
         }
     }
 
+    private static void sendTeamCounts(ServerPlayer player) {
+        if (store == null) return;
+        Map<String, Integer> counts = store.teamCounts();
+        PacketDistributor.sendToPlayer(player, new TeamCountsPayload(
+                counts.getOrDefault("leste", 0), counts.getOrDefault("oeste", 0),
+                counts.getOrDefault("norte", 0), counts.getOrDefault("sul", 0)));
+    }
+
     private static void sendPrompt(ServerPlayer player, Pending pending, long now) {
         boolean registered = store.has(player.getGameProfile().getName());
         int secondsLeft = (int) Math.max(0, (pending.deadlineTick - now) / 20);
+
+        if (pending.teamPhase) {
+            if (hasMod(player)) {
+                sendTeamCounts(player);
+                PacketDistributor.sendToPlayer(player, new AuthStatePayload(AuthState.PROMPT_TEAM, 0, secondsLeft));
+            } else {
+                player.displayClientMessage(Msg.teamHint(), true);
+                if (pending.prompts == 0) player.sendSystemMessage(Msg.teamHint());
+            }
+            pending.prompts++;
+            return;
+        }
 
         if (hasMod(player)) {
             PacketDistributor.sendToPlayer(player, new AuthStatePayload(
@@ -153,6 +176,10 @@ public final class AuthService {
         Pending pending = PENDING.get(player.getUUID());
         if (pending == null) {
             player.sendSystemMessage(Msg.alreadyLoggedIn());
+            return;
+        }
+        if (pending.teamPhase) {
+            send(player, AuthState.PROMPT_TEAM, 0, Msg.teamFirst());
             return;
         }
         if (pending.busy) {
@@ -178,10 +205,8 @@ public final class AuthService {
         pending.busy = false;
 
         if (Boolean.TRUE.equals(ok)) {
-            PENDING.remove(id);
             LoginAttempts.reset(ipOf(player));
-            send(player, AuthState.SUCCESS, 0, null);
-            player.sendSystemMessage(Msg.welcome(player.getGameProfile().getName()));
+            completeAuth(server, player, pending, Msg.welcome(player.getGameProfile().getName()));
             return;
         }
 
@@ -201,6 +226,10 @@ public final class AuthService {
         }
         if (pending.busy) {
             send(player, AuthState.BUSY, 0, Msg.busy());
+            return;
+        }
+        if (pending.teamPhase) {
+            send(player, AuthState.PROMPT_TEAM, 0, Msg.teamFirst());
             return;
         }
         String name = player.getGameProfile().getName();
@@ -236,9 +265,102 @@ public final class AuthService {
             return;
         }
         store.put(name, account);
-        PENDING.remove(id);
-        send(player, AuthState.SUCCESS, 0, null);
-        player.sendSystemMessage(Msg.registered());
+        completeAuth(server, player, pending, Msg.registered());
+    }
+
+    // ------------------------------------------------------------------ time
+
+    /**
+     * Fim do login/registro. Se a conta ainda não tem time, o jogador continua "pendente"
+     * (congelado) na fase de escolha do time; só depois de escolher ele cai no lobby.
+     */
+    private static void completeAuth(MinecraftServer server, ServerPlayer player, Pending pending, Component doneMsg) {
+        AccountStore.Account account = store.get(player.getGameProfile().getName());
+        Team team = account == null ? null : Team.byId(account.team());
+
+        if (team == null) {
+            long now = server.getTickCount();
+            pending.teamPhase = true;
+            pending.deadlineTick = now + ServerConfig.LOGIN_TIMEOUT_SECONDS.get() * 20L; // prazo novo p/ escolher
+            pending.nextPromptTick = now + 200;
+            send(player, AuthState.PROMPT_TEAM, 0, Msg.teamHint());
+            return;
+        }
+
+        PENDING.remove(player.getUUID());
+        send(player, AuthState.SUCCESS, team.wire(), null);
+        player.sendSystemMessage(doneMsg);
+    }
+
+    /**
+     * Escolha do time permitida exclusivamente durante a etapa de cadastro/login.
+     * Depois que a autenticação termina, qualquer nova tentativa é recusada.
+     * O time salvo na conta nunca é substituído por uma escolha enviada pelo cliente.
+     */
+    public static void chooseTeam(ServerPlayer player, String teamId) {
+        if (store == null) return;
+        String name = player.getGameProfile().getName();
+        AccountStore.Account account = store.get(name);
+        Pending pending = PENDING.get(player.getUUID());
+
+        // A seleção só é aceita enquanto o servidor estiver aguardando a escolha
+        // no fluxo de autenticação. Abrir/tentar usar a tela depois do login não funciona.
+        if (pending == null || !pending.teamPhase) {
+            Team savedTeam = account == null ? null : Team.byId(account.team());
+            if (savedTeam != null) {
+                player.sendSystemMessage(Msg.teamAlready(label(savedTeam)));
+            } else {
+                player.sendSystemMessage(Msg.notLoggedIn());
+            }
+            return;
+        }
+
+        // Mesmo durante uma tentativa de pacote repetido, nunca sobrescreve um time salvo.
+        if (account != null && Team.byId(account.team()) != null) {
+            player.sendSystemMessage(Msg.teamAlready(label(Team.byId(account.team()))));
+            return;
+        }
+        if (account == null) {
+            player.sendSystemMessage(Msg.notLoggedIn());
+            return;
+        }
+
+        Team team = Team.byId(teamId);
+        if (team == null) {
+            send(player, AuthState.PROMPT_TEAM, 0, Msg.teamInvalid());
+            return;
+        }
+
+        store.put(name, account.withTeam(team.id));
+        PENDING.remove(player.getUUID());
+        send(player, AuthState.SUCCESS, team.wire(), null);
+        player.sendSystemMessage(Msg.teamChosen(name, label(team)));
+        LOGGER.info("[SurvivorAuth] {} escolheu o time {}", name, team.id);
+    }
+
+    /** Time atual do jogador (null se ainda não escolheu). */
+    public static Team teamOf(ServerPlayer player) {
+        if (store == null) return null;
+        AccountStore.Account account = store.get(player.getGameProfile().getName());
+        return account == null ? null : Team.byId(account.team());
+    }
+
+    public static String label(Team team) {
+        return team.id.toUpperCase(Locale.ROOT);
+    }
+
+    /** Admin: apaga o time da conta para o jogador poder escolher de novo. Retorna false se não há conta. */
+    public static boolean resetTeam(MinecraftServer server, String name) {
+        if (store == null) return false;
+        AccountStore.Account account = store.get(name);
+        if (account == null) return false;
+        store.put(name, account.withTeam(null));
+        ServerPlayer online = server.getPlayerList().getPlayerByName(name);
+        if (online != null && !isPending(online)) {
+            beginPending(online);
+            PENDING.get(online.getUUID()).teamPhase = true; // pula o login, vai direto pra escolha
+        }
+        return true;
     }
 
     public static void changePassword(ServerPlayer player, String oldPassword, String newPassword) {
@@ -261,7 +383,9 @@ public final class AuthService {
         MinecraftServer server = player.getServer();
         UUID id = player.getUUID();
         submit(server,
-                () -> Passwords.verify(oldPassword, account) ? Passwords.create(newPassword, iterations) : null,
+                () -> Passwords.verify(oldPassword, account)
+                        ? Passwords.create(newPassword, iterations).withTeam(account.team())
+                        : null,
                 updated -> {
                     ServerPlayer p = server.getPlayerList().getPlayer(id);
                     if (p == null) return;

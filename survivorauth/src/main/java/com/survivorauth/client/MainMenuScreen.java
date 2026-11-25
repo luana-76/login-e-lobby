@@ -6,6 +6,7 @@ import org.lwjgl.glfw.GLFW;
 
 import com.survivorauth.SurvivorAuth;
 import com.survivorauth.config.ClientConfig;
+import com.survivorauth.net.Team;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -237,7 +238,21 @@ public class MainMenuScreen extends Screen {
         int right = accountX - 22;
         String name = Minecraft.getInstance().getUser().getName();
         Component rank = Component.translatable("survivorauth.menu.rank");
-        g.drawString(font, rank, right - font.width(rank), 8, accent, false);
+        Team team = ClientTeam.get();
+        if (team != null) {
+            // "LESTE • SOBREVIVENTE" com a cor do time + barra vertical ao lado do nome
+            Component teamName = Component.translatable("survivorauth.team." + team.id);
+            Component sep = Component.literal(" • ");
+            int lineW = font.width(teamName) + font.width(sep) + font.width(rank);
+            int tx = right - lineW;
+            g.drawString(font, teamName, tx, 8, team.color, false);
+            g.drawString(font, sep, tx + font.width(teamName), 8, dim, false);
+            g.drawString(font, rank, tx + font.width(teamName) + font.width(sep), 8, accent, false);
+            int barX = right - Math.max(lineW, font.width(name)) - 6;
+            g.fill(barX, 8, barX + 2, 28, team.color);
+        } else {
+            g.drawString(font, rank, right - font.width(rank), 8, accent, false);
+        }
         g.drawString(font, name, right - font.width(name), 19, 0xFFF2EEE4, false);
         for (int i = 0; i < 3; i++) g.fill(accountX - 14, 12 + i * 5, accountX, 14 + i * 5, 0xFFF2EEE4);
     }
@@ -365,6 +380,11 @@ public class MainMenuScreen extends Screen {
         int cx = (ex1 + ex2) / 2;
         g.fill(cx - 38, ey2 - 6, cx + 38, ey2 - 3, 0x55000000);
         g.fill(cx - 28, ey2 - 3, cx + 28, ey2 - 1, 0x33000000);
+        Team team = ClientTeam.get();
+        if (team != null) { // brilho da cor do time no chão, sob o personagem
+            g.fill(cx - 44, ey2 - 2, cx + 44, ey2 - 1, Scenery.withAlpha(team.color, 0xB0));
+            g.fill(cx - 30, ey2 - 1, cx + 30, ey2, Scenery.withAlpha(team.color, 0x50));
+        }
 
         InventoryScreen.renderEntityInInventoryFollowsMouse(g, ex1, ey1, ex2, ey2, scale, 0.0625F, mx, my, player);
     }

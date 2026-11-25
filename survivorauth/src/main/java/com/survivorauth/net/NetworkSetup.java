@@ -15,12 +15,18 @@ public final class NetworkSetup {
 
         // Lambda em vez de ClientPayloadHandler::handleState: assim a classe do cliente
         // só é carregada quando realmente roda no cliente, e o servidor dedicado não quebra.
+        registrar.playToClient(TeamCountsPayload.TYPE, TeamCountsPayload.CODEC, (payload, ctx) -> {
+            if (FMLEnvironment.dist.isClient()) {
+                ClientPayloadHandler.handleTeamCounts(payload, ctx);
+            }
+        });
         registrar.playToClient(AuthStatePayload.TYPE, AuthStatePayload.CODEC, (payload, ctx) -> {
             if (FMLEnvironment.dist.isClient()) {
                 ClientPayloadHandler.handleState(payload, ctx);
             }
         });
         registrar.playToServer(AuthSubmitPayload.TYPE, AuthSubmitPayload.CODEC, ServerPayloadHandler::handleSubmit);
+        registrar.playToServer(TeamChoosePayload.TYPE, TeamChoosePayload.CODEC, ServerPayloadHandler::handleTeam);
         registrar.playToServer(ShopClaimPayload.TYPE, ShopClaimPayload.CODEC, ServerPayloadHandler::handleShopClaim);
     }
 

@@ -72,7 +72,7 @@ public final class ServerEvents {
         }
     }
 
-    /** Só /login e /register passam enquanto o jogador não se identificou. */
+    /** Só /login, /register e /team passam enquanto o jogador não se identificou. */
     @SubscribeEvent
     public static void onCommand(CommandEvent event) {
         ServerPlayer player = event.getParseResults().getContext().getSource().getPlayer();
@@ -82,7 +82,7 @@ public final class ServerEvents {
         if (input.startsWith("/")) input = input.substring(1);
         String first = input.split("\\s+")[0].toLowerCase(Locale.ROOT);
 
-        if (!first.equals("login") && !first.equals("register")) {
+        if (!first.equals("login") && !first.equals("register") && !first.equals("team")) {
             event.setCanceled(true);
             player.sendSystemMessage(Msg.chatBlocked());
         }

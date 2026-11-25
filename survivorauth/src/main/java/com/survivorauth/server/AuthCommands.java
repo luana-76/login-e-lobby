@@ -8,6 +8,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import com.survivorauth.net.Team;
 
 public final class AuthCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -44,7 +45,28 @@ public final class AuthCommands {
                                     return 1;
                                 }))));
 
-        // Admin: /sauth unregister <nome> | /sauth logout <jogador>
+        // /team            -> mostra o seu time
+        // /team <time>     -> só funciona durante a etapa de escolha no cadastro/login
+        // Após a autenticação, AuthService recusa qualquer tentativa de troca.
+        dispatcher.register(Commands.literal("team")
+                .executes(ctx -> {
+                    ServerPlayer p = ctx.getSource().getPlayerOrException();
+                    Team t = AuthService.teamOf(p);
+                    p.sendSystemMessage(t == null ? Msg.teamNone() : Msg.teamCurrent(AuthService.label(t)));
+                    return 1;
+                })
+                .then(Commands.argument("time", StringArgumentType.word())
+                        .suggests((c, b) -> {
+                            for (Team t : Team.values()) b.suggest(t.id);
+                            return b.buildFuture();
+                        })
+                        .executes(ctx -> {
+                            ServerPlayer p = ctx.getSource().getPlayerOrException();
+                            AuthService.chooseTeam(p, StringArgumentType.getString(ctx, "time"));
+                            return 1;
+                        })));
+
+        // Admin: /sauth unregister <nome> | /sauth resetteam <nome> | /sauth logout <jogador>
         dispatcher.register(Commands.literal("sauth")
                 .requires(src -> src.hasPermission(3))
                 .then(Commands.literal("unregister")
@@ -56,6 +78,16 @@ public final class AuthCommands {
                                             ? "Conta de " + name + " removida."
                                             : "Nenhuma conta encontrada para " + name + "."), true);
                                     return removed ? 1 : 0;
+                                })))
+                .then(Commands.literal("resetteam")
+                        .then(Commands.argument("name", StringArgumentType.word())
+                                .executes(ctx -> {
+                                    String name = StringArgumentType.getString(ctx, "name");
+                                    boolean ok = AuthService.resetTeam(ctx.getSource().getServer(), name);
+                                    ctx.getSource().sendSuccess(() -> Component.literal(ok
+                                            ? "Time de " + name + " apagado. Ele poderá escolher de novo."
+                                            : "Nenhuma conta encontrada para " + name + "."), true);
+                                    return ok ? 1 : 0;
                                 })))
                 .then(Commands.literal("logout")
                         .then(Commands.argument("player", EntityArgument.player())

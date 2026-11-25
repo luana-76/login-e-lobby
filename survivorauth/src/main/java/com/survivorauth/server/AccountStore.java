@@ -19,7 +19,12 @@ import com.mojang.logging.LogUtils;
 
 /** Contas salvas em <mundo>/survivorauth/accounts.json (nunca contém a senha, só o hash). */
 public final class AccountStore {
-    public record Account(String salt, String hash, int iterations, long created) {}
+    /** team = id do time ("leste"...). null = ainda não escolheu (contas antigas também ficam null). */
+    public record Account(String salt, String hash, int iterations, long created, String team) {
+        public Account withTeam(String newTeam) {
+            return new Account(salt, hash, iterations, created, newTeam);
+        }
+    }
 
     private static final Logger LOGGER = LogUtils.getLogger();
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
@@ -54,6 +59,22 @@ public final class AccountStore {
         boolean removed = accounts.remove(key(name)) != null;
         if (removed) save();
         return removed;
+    }
+
+    /** Quantidade real de contas cadastradas em cada time. */
+    public Map<String, Integer> teamCounts() {
+        Map<String, Integer> counts = new java.util.HashMap<>();
+        counts.put("leste", 0);
+        counts.put("oeste", 0);
+        counts.put("norte", 0);
+        counts.put("sul", 0);
+        for (Account account : accounts.values()) {
+            if (account != null && account.team() != null) {
+                String team = account.team().toLowerCase(Locale.ROOT);
+                if (counts.containsKey(team)) counts.put(team, counts.get(team) + 1);
+            }
+        }
+        return counts;
     }
 
     private void load() {

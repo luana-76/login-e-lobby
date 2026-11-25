@@ -2,6 +2,7 @@ package com.survivorauth.server;
 
 import com.survivorauth.net.AuthSubmitPayload;
 import com.survivorauth.net.ShopClaimPayload;
+import com.survivorauth.net.TeamChoosePayload;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -15,6 +16,14 @@ public final class ServerPayloadHandler {
                 } else {
                     AuthService.login(player, payload.password());
                 }
+            }
+        });
+    }
+
+    public static void handleTeam(TeamChoosePayload payload, IPayloadContext ctx) {
+        ctx.enqueueWork(() -> {
+            if (ctx.player() instanceof ServerPlayer player) {
+                AuthService.chooseTeam(player, payload.team());
             }
         });
     }

@@ -40,6 +40,34 @@ public final class Msg {
         return green("Senha alterada.");
     }
 
+    public static Component teamChosen(String name, String teamLabel) {
+        return green("Bem-vindo ao time " + teamLabel + ", " + name + ". Boa sorte lá fora.");
+    }
+
+    public static Component teamHint() {
+        return gray("Escolha seu time (só uma vez!): /team leste | oeste | norte | sul");
+    }
+
+    public static Component teamCurrent(String teamLabel) {
+        return gray("Seu time é " + teamLabel + ". A escolha é definitiva.");
+    }
+
+    public static Component teamNone() {
+        return gray("Você ainda não escolheu um time.");
+    }
+
+    public static Component teamAlready(String teamLabel) {
+        return red("Você já está no time " + teamLabel + ". Não dá para trocar.");
+    }
+
+    public static Component teamInvalid() {
+        return red("Time inválido. Use: leste, oeste, norte ou sul.");
+    }
+
+    public static Component teamFirst() {
+        return red("Escolha seu time antes de continuar: /team leste | oeste | norte | sul");
+    }
+
     // --- erros ---
     public static Component wrongPassword(int left) {
         return red("Senha incorreta. Tentativas restantes: " + left);

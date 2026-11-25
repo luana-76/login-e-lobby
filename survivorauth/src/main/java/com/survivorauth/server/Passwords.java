@@ -19,7 +19,8 @@ public final class Passwords {
                 Base64.getEncoder().encodeToString(salt),
                 Base64.getEncoder().encodeToString(hash),
                 iterations,
-                System.currentTimeMillis());
+                System.currentTimeMillis(),
+                null);
     }
 
     public static boolean verify(String password, AccountStore.Account account) {
